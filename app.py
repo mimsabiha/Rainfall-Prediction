@@ -31,8 +31,11 @@ def func():
     return
 
 
-def prediction(monthPredict, dayPredict, yearPredict):
-    input_data = (monthPredict, dayPredict, yearPredict)
+def prediction(monthPredict, dayPredict, yearPredict,place):
+
+    inde = df1[df1["Station"] == place]
+    ind=inde.iloc[0]["StationIndex"]  
+    input_data = (ind,monthPredict, dayPredict)
 
     # changing the input_data to numpy array
     input_data_as_numpy_array = np.asarray(input_data)
@@ -54,13 +57,13 @@ if nav == "Home":
     data = data.loc[data["Year"] >= val]
 
     if graph == "Year vs Rainfall":
-        plt.figure(figsize=(15, 10))
+        plt.figure(figsize=(15, 8))
         plt.scatter(data["Year"], data["Rainfall"])
         plt.xlabel("Year")
         func()
 
     if graph == "Place vs Rainfall":
-        plt.figure(figsize=(15, 10))
+        plt.figure(figsize=(15, 8))
         labels = data["Station"]
         fig = plt.scatter(data["Station"], data["Rainfall"])
         plt.xticks(rotation=90)
@@ -76,18 +79,6 @@ if nav == "Predictor":
     year = val.year
     month = val.month
     day = val.day
-
-    if st.button("Predict"):
-        #print(year, month, day)
-        st.success(prediction(month, day, year))
-
-if nav == "Contribute":
-    st.header("Contribution to our dataset")
-
-    val =st.date_input("Enter Date")
-    day = val.day
-    month = val.month
-    year = val.year
     place = st.selectbox("Enter Place for Prediction", [
         "Place",
         "Ambagan_ctg",
@@ -118,7 +109,56 @@ if nav == "Contribute":
         "Rangpur",
         "Sandwip",
         "Satkhira",
-        "Sitakunda"
+        "Sitakunda",
+        "Srimangal",
+        "Sylhet",
+        "sydpur",
+        "Tangail",
+        "Teknaf",
+    ])
+
+    if st.button("Predict"):
+        #print(year, month, day)
+        st.success(prediction(month, day, year,place))
+
+if nav == "Contribute":
+    st.header("Contribution to our dataset")
+
+    val =st.date_input("Enter Date")
+    day = val.day
+    month = val.month
+    year = val.year
+    place = st.selectbox("Choose Place ", [
+        "Place",
+        "Ambagan_ctg",
+        "Barisal",
+        "Bhola",
+        "Bogra",
+        "Chandpur",
+        "Chittagong",
+        "chuadanga",
+        "Comilla",
+        "CoxsBazar",
+        "Dinajpur",
+        "Faridpur",
+        "Feni",
+        "Hatiya",
+        "Ishurdi",
+        "Jessore",
+        "Khulna",
+        "Khepupara",
+        "Kutubdia",
+        "Madaripur",
+        "Mongla",
+        "Mymensingh",
+        "M.court",
+        "Patuakhali",
+        "Rangamati",
+        "Rajshahi",
+        "Rangpur",
+        "Sandwip",
+        "Satkhira",
+        "Sitakunda",
         "Srimangal",
         "Sylhet",
         "sydpur",
