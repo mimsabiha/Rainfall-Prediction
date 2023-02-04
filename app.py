@@ -8,16 +8,15 @@ import csv
 
 st.title("Rainfall Predictor")
 
-#data = pd.read_csv("E:/3rd_yr_course/3_2/AI/Rainfall-Prediction/historical_rainfall_data.csv")
+# data = pd.read_csv("E:/3rd_yr_course/3_2/AI/Rainfall-Prediction/historical_rainfall_data.csv")
 data = pd.read_csv('historical_rainfall_data.csv')
 df = data["Station"]
-df1= data[{"StationIndex","Station"}]
-df1.drop_duplicates(inplace = True)
-
+df1 = data[{"StationIndex", "Station"}]
+df1.drop_duplicates(inplace=True)
 
 nav = st.sidebar.radio("Navigation", ["Home", "Predictor", "Contribute"])
-#st.image("E:/3rd_yr_course/3_2/AI/Rainfall-Prediction/image/weather.jfif")
-#loaded_model = pickle.load(open('E:/3rd_yr_course/3_2/AI/Rainfall-Prediction/trained_model.sav', 'rb'))
+# st.image("E:/3rd_yr_course/3_2/AI/Rainfall-Prediction/image/weather.jfif")
+# loaded_model = pickle.load(open('E:/3rd_yr_course/3_2/AI/Rainfall-Prediction/trained_model.sav', 'rb'))
 st.image('image//weather.jfif')
 loaded_model = pickle.load(open('trained_model.sav', 'rb'))
 
@@ -31,11 +30,10 @@ def func():
     return
 
 
-def prediction(monthPredict, dayPredict, yearPredict,place):
-
-    inde = df1[df1["Station"] == place]
-    ind=inde.iloc[0]["StationIndex"]  
-    input_data = (ind,monthPredict, dayPredict)
+def prediction(monthPredict, dayPredict, yearPredict, placePredict):
+    index = df1[df1["Station"] == placePredict]
+    ind = index.iloc[0]["StationIndex"]
+    input_data = (ind, monthPredict, dayPredict)
 
     # changing the input_data to numpy array
     input_data_as_numpy_array = np.asarray(input_data)
@@ -59,6 +57,8 @@ if nav == "Home":
     if graph == "Year vs Rainfall":
         plt.figure(figsize=(15, 8))
         plt.scatter(data["Year"], data["Rainfall"])
+        st.line_chart(data["Year"])
+        st.bar_chart(data['Year'])
         plt.xlabel("Year")
         func()
 
@@ -68,12 +68,12 @@ if nav == "Home":
         fig = plt.scatter(data["Station"], data["Rainfall"])
         plt.xticks(rotation=90)
         plt.xlabel("Place")
+        st.bar_chart(data['Station'])
         func()
-
 
 if nav == "Predictor":
     st.header("Guess Rainfall")
-    
+
     # st.text_input("Enter Place for Prediction")
     val = st.date_input("Enter date for prediction")
     year = val.year
@@ -118,13 +118,13 @@ if nav == "Predictor":
     ])
 
     if st.button("Predict"):
-        #print(year, month, day)
-        st.success(prediction(month, day, year,place))
+        # print(year, month, day)
+        st.success(prediction(month, day, year, place))
 
 if nav == "Contribute":
     st.header("Contribution to our dataset")
 
-    val =st.date_input("Enter Date")
+    val = st.date_input("Enter Date")
     day = val.day
     month = val.month
     year = val.year
@@ -165,18 +165,19 @@ if nav == "Contribute":
         "Tangail",
         "Teknaf",
     ])
-    rainfall =st.number_input("Enter Rainfall")
-    if st.button("Submit"): 
+    rainfall = st.number_input("Enter Rainfall")
+    if st.button("Submit"):
         inde = df1[df1["Station"] == place]
-        ind=inde.iloc[0]["StationIndex"]   
-        #st.write(ind)
-        new_row = {'StationIndex':ind,'Station': place, 'Year':year, 'Month':month, 'Day':day ,'Rainfall':rainfall}
+        ind = inde.iloc[0]["StationIndex"]
+        # st.write(ind)
+        new_row = {'StationIndex': ind, 'Station': place, 'Year': year, 'Month': month, 'Day': day,
+                   'Rainfall': rainfall}
 
-        column_name = ['StationIndex', 'Station', 'Year', 'Month','Day', 'Rainfall'] #The name of the columns
-        data1 = [ind,place,year,month,day,rainfall] #the data
+        column_name = ['StationIndex', 'Station', 'Year', 'Month', 'Day', 'Rainfall']  # The name of the columns
+        data1 = [ind, place, year, month, day, rainfall]  # the data
 
         with open('historical_rainfall_data.csv', 'a') as csv_file:
-            dict_object = csv.DictWriter(csv_file, fieldnames=column_name) 
-  
+            dict_object = csv.DictWriter(csv_file, fieldnames=column_name)
+
             dict_object.writerow(new_row)
         st.success("Added Successfully")
