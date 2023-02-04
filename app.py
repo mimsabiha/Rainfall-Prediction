@@ -1,10 +1,12 @@
 import pickle
 import numpy as np
 import streamlit as st
+import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
 from plotly import graph_objs as go
 import csv
+
 
 st.title("Rainfall Predictor")
 
@@ -52,10 +54,12 @@ if nav == "Home":
     if st.checkbox("Show Table"):
         # st.table(data)
         st.dataframe(data, width=700, height=700)
+    st.header("Data visualization")
     graph = st.selectbox("What kind of graph? ", ["Year vs Rainfall", "Place vs Rainfall"])
     val = st.slider("Filter data using Years", 1950, 2050)
     data = data.loc[data["Year"] >= val]
 
+    
     if graph == "Year vs Rainfall":
         plt.figure(figsize=(15, 8))
         plt.scatter(data["Year"], data["Rainfall"])
@@ -69,6 +73,29 @@ if nav == "Home":
         plt.xticks(rotation=90)
         plt.xlabel("Place")
         func()
+    #heatmap
+    #st.write("Correlation Between Features")
+    fig = plt.figure(figsize=(10,5))
+    #plot heat map
+    g = sns.heatmap(data.corr(), cmap="YlGnBu", annot=True)
+    plt.title("HeatMap(Correlation Between Features)")
+    st.write(fig)
+    #g=sns.heatmap(corrmat,annot=True)
+    fig = plt.figure(figsize=(10,5))
+    sns.boxplot(data)
+    #st.write("(Distribution of Data)")
+    plt.title("Boxplot(Distribution of Data)")
+    plt.xlabel("Feature")
+    plt.ylabel("count")
+    st.write(fig)
+    df3 = data.drop(columns = ['Station'])
+    fig = plt.figure(figsize=(10,5))
+    sns.distplot(df3)
+    plt.title("The variation in the data distribution")
+    plt.xlabel("Feature")
+    plt.ylabel("count")
+    st.write(fig)
+    
 
 
 if nav == "Predictor":
@@ -90,6 +117,7 @@ if nav == "Predictor":
         "chuadanga",
         "Comilla",
         "CoxsBazar",
+        "Dhaka",
         "Dinajpur",
         "Faridpur",
         "Feni",
@@ -119,8 +147,32 @@ if nav == "Predictor":
 
     if st.button("Predict"):
         #print(year, month, day)
-        st.success(prediction(month, day, year,place))
-
+        s = prediction(month, day, year,place) 
+        if s<=1 :
+            p="Wow it's Sunny day"
+            st.success( p )
+            st.image('image//sunny.jpg')
+        elif s>1 and s<=10:
+            p = "Light Rain"
+            st.success( p )
+            st.image('image//Light.jpeg')
+        elif s>10 and s <=22 :
+            p = "Moderate Rain"
+            st.success( p )
+            st.image('image//Moderate.jfif')
+        elif s>22 and s<=44 :
+            p = "Moderate Heavy Rain"
+            st.success( p )
+            st.image('image//ModerateHeavy.jfif')
+        elif s <= 88:
+            p ="Heavy Rain"
+            st.success( p )
+            st.image('image//Heavy.jfif')
+        else :
+            p = "Very Heavy Rain"
+            st.success( p )
+            st.image('image//VeryHeavy.jpg')
+        st.balloons()
 if nav == "Contribute":
     st.header("Contribution to our dataset")
 
@@ -139,6 +191,7 @@ if nav == "Contribute":
         "chuadanga",
         "Comilla",
         "CoxsBazar",
+        "Dhaka",
         "Dinajpur",
         "Faridpur",
         "Feni",
