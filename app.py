@@ -6,11 +6,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from plotly import graph_objs as go
 import csv
+from pathlib import Path
+import streamlit_authenticator as stauth
 
 
 st.title("Rainfall Predictor")
 
-#data = pd.read_csv("E:/3rd_yr_course/3_2/AI/Rainfall-Prediction/historical_rainfall_data.csv")
+#data = pd.read_csv("H:/ai/project/historical_rainfall_data.csv")
 data = pd.read_csv('historical_rainfall_data.csv')
 df = data["Station"]
 df1= data[{"StationIndex","Station"}]
@@ -18,8 +20,8 @@ df1.drop_duplicates(inplace = True)
 
 
 nav = st.sidebar.radio("Navigation", ["Home", "Predictor", "Contribute"])
-#st.image("E:/3rd_yr_course/3_2/AI/Rainfall-Prediction/image/weather.jfif")
-#loaded_model = pickle.load(open('E:/3rd_yr_course/3_2/AI/Rainfall-Prediction/trained_model.sav', 'rb'))
+# st.image("H:/ai/project/weather.jfif")
+# loaded_model = pickle.load(open('H:/ai/project/trained_model.sav', 'rb'))
 st.image('image//weather.jfif')
 loaded_model = pickle.load(open('trained_model.sav', 'rb'))
 
@@ -174,62 +176,110 @@ if nav == "Predictor":
             st.image('image//VeryHeavy.jpg')
         st.balloons()
 if nav == "Contribute":
-    st.header("Contribution to our dataset")
+    # ---------user authentication---------
+    names = ["Admin", "Aipr"]
+    usernames = ["admin", "person"]
 
-    val =st.date_input("Enter Date")
-    day = val.day
-    month = val.month
-    year = val.year
-    place = st.selectbox("Choose Place ", [
-        "Place",
-        "Ambagan_ctg",
-        "Barisal",
-        "Bhola",
-        "Bogra",
-        "Chandpur",
-        "Chittagong",
-        "chuadanga",
-        "Comilla",
-        "CoxsBazar",
-        "Dhaka",
-        "Dinajpur",
-        "Faridpur",
-        "Feni",
-        "Hatiya",
-        "Ishurdi",
-        "Jessore",
-        "Khulna",
-        "Khepupara",
-        "Kutubdia",
-        "Madaripur",
-        "Mongla",
-        "Mymensingh",
-        "M.court",
-        "Patuakhali",
-        "Rangamati",
-        "Rajshahi",
-        "Rangpur",
-        "Sandwip",
-        "Satkhira",
-        "Sitakunda",
-        "Srimangal",
-        "Sylhet",
-        "sydpur",
-        "Tangail",
-        "Teknaf",
-    ])
-    rainfall =st.number_input("Enter Rainfall")
-    if st.button("Submit"): 
-        inde = df1[df1["Station"] == place]
-        ind=inde.iloc[0]["StationIndex"]   
-        #st.write(ind)
-        new_row = {'StationIndex':ind,'Station': place, 'Year':year, 'Month':month, 'Day':day ,'Rainfall':rainfall}
+    file_path = Path(__file__).parent/"hashed_pw.pkl"
+    with file_path.open("rb") as file:
+        hashed_passwords = pickle.load(file)
 
-        column_name = ['StationIndex', 'Station', 'Year', 'Month','Day', 'Rainfall'] #The name of the columns
-        data1 = [ind,place,year,month,day,rainfall] #the data
+    credentials = {"usernames": {}}
 
-        with open('historical_rainfall_data.csv', 'a') as csv_file:
-            dict_object = csv.DictWriter(csv_file, fieldnames=column_name) 
-  
-            dict_object.writerow(new_row)
-        st.success("Added Successfully")
+    for uname, name, pwd in zip(usernames, names, hashed_passwords):
+        user_dict = {"name": name, "password": pwd}
+        credentials["usernames"].update({uname: user_dict})
+
+    authenticator = stauth.Authenticate(credentials, "cokkie_name", "random_key", cookie_expiry_days=30)
+
+    name , authentication_status, username =authenticator.login("Login","main")
+    authenticator.logout("Logout","sidebar")
+
+
+    if authentication_status == False :
+        st.error("Username/password is wrong")
+    if authentication_status == None:
+        st.warning("Pleas enter username and password")
+    if authentication_status:
+        st.header("Contribution to our dataset")
+
+        val =st.date_input("Enter Date")
+        day = val.day
+        month = val.month
+        year = val.year
+        place = st.selectbox("Choose Place ", [
+            "Place",
+            "Ambagan_ctg",
+            "Barisal",
+            "Bhola",
+            "Bogra",
+            "Chandpur",
+            "Chittagong",
+            "chuadanga",
+            "Comilla",
+            "CoxsBazar",
+            "Dhaka",
+            "Dinajpur",
+            "Faridpur",
+            "Feni",
+            "Hatiya",
+            "Ishurdi",
+            "Jessore",
+            "Khulna",
+            "Khepupara",
+            "Kutubdia",
+            "Madaripur",
+            "Mongla",
+            "Mymensingh",
+            "M.court",
+            "Patuakhali",
+            "Rangamati",
+            "Rajshahi",
+            "Rangpur",
+            "Sandwip",
+            "Satkhira",
+            "Sitakunda",
+            "Srimangal",
+            "Sylhet",
+            "sydpur",
+            "Tangail",
+            "Teknaf",
+        ])
+        rainfall =st.number_input("Enter Rainfall")
+
+
+        if st.button("Submit"):
+            inde = df1[df1["Station"] == place]
+            ind=inde.iloc[0]["StationIndex"]
+            #st.write(ind)
+            new_row = {'StationIndex':ind,'Station': place, 'Year':year, 'Month':month, 'Day':day ,'Rainfall':rainfall}
+
+            column_name = ['StationIndex', 'Station', 'Year', 'Month','Day', 'Rainfall'] #The name of the columns
+            data1 = [ind,place,year,month,day,rainfall] #the data
+
+            with open('historical_rainfall_data.csv', 'a') as csv_file:
+                dict_object = csv.DictWriter(csv_file, fieldnames=column_name)
+
+                dict_object.writerow(new_row)
+            st.success("Added Successfully")
+
+    # ----------Request access form------------
+    if not authentication_status:
+        st.header(":mailbox: Request Access")
+        access_form="""
+        <form action="https://formsubmit.co/kabir73826@gmail.com" method="POST">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="text" name="name" placeholder="your name" required>
+        <input type="email" name="email" placeholder="your email" required>
+        <textarea name="message" placeholder="State your interest"></textarea>
+        <button type="submit">Send</button>
+        </form>
+        """
+        st.markdown(access_form,unsafe_allow_html=True)
+
+        def local_css(file_name):
+            with open(file_name) as f:
+                st.markdown(f"<style>{f.read()}</style>",unsafe_allow_html = True)
+
+        local_css("style/style.css")
+
